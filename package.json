@@ -1,0 +1,15 @@
+{
+  "name": "virtual-card-generator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dashboard lokal untuk membuat dan mengelola virtual card lewat API KripiCard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node server.js --mock",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

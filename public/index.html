@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Virtual Card Generator</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Virtual Card Generator</h1>
+    <span id="mode-badge" class="badge hidden">MODE DEMO</span>
+    <button id="refresh" class="btn ghost" type="button">Muat ulang</button>
+  </header>
+
+  <div id="no-key" class="banner hidden">
+    API key belum diisi. Salin <code>.env.example</code> ke <code>.env</code>, isi <code>KRIPICARD_API_KEY</code>, lalu jalankan ulang server.
+  </div>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>Buat kartu baru</h2>
+      <form id="create-form" autocomplete="off">
+        <label>BIN
+          <select name="bin" id="bin" required></select>
+        </label>
+        <label>Saldo awal (USD)
+          <input name="amount" id="create-amount" type="number" min="10" step="0.01" value="10" required>
+        </label>
+        <label>Nama di kartu
+          <input name="name_on_card" minlength="2" maxlength="50" required>
+        </label>
+        <label>Email <span class="muted">(opsional)</span>
+          <input name="email" type="email">
+        </label>
+        <label id="dob-field" class="hidden">Tanggal lahir
+          <input name="dateOfBirth" type="date">
+        </label>
+        <p class="fee" id="create-fee"></p>
+        <button class="btn primary" type="submit">Buat kartu</button>
+      </form>
+    </section>
+
+    <section class="panel grow">
+      <div class="panel-head">
+        <h2>Kartu saya <span id="card-count" class="muted"></span></h2>
+      </div>
+      <div id="cards" class="cards"></div>
+      <p id="empty" class="muted hidden">Belum ada kartu.</p>
+    </section>
+  </main>
+
+  <dialog id="dialog">
+    <form method="dialog" class="dialog-body">
+      <h3 id="dialog-title"></h3>
+      <div id="dialog-content"></div>
+      <div class="dialog-actions" id="dialog-actions"></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
