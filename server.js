@@ -4,6 +4,16 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+
+// .env dibaca sebelum lib/kripicard dimuat, karena daftar BIN diambil dari sana.
+if (require.main === module) {
+  try {
+    process.loadEnvFile(path.join(__dirname, '.env'));
+  } catch {
+    // .env opsional di mode mock
+  }
+}
+
 const { callKripicard, ENDPOINTS, BINS, BINS_NEED_DOB, MIN_AMOUNT } = require('./lib/kripicard');
 const { createMockFetch } = require('./lib/mock');
 
@@ -104,11 +114,6 @@ function createApp({ apiKey, fetchImpl, mock = false, port }) {
 }
 
 if (require.main === module) {
-  try {
-    process.loadEnvFile(path.join(__dirname, '.env'));
-  } catch {
-    // .env opsional di mode mock
-  }
   const port = Number(process.env.PORT) || 3000;
   const mock = process.env.MOCK === '1' || process.argv.includes('--mock');
   const apiKey = mock ? 'mock-key' : process.env.KRIPICARD_API_KEY;

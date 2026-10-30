@@ -7,8 +7,8 @@ const estFee = (amount) => Math.round((1 + amount * 0.04) * 100) / 100;
 const DETAIL_HIDE_MS = 30_000;
 const QUICK_AMOUNTS = [50, 100, 250, 500];
 
-// Wilayah BIN yang disebut docs (wajib tanggal lahir); BIN lain tidak dijelaskan.
-const BIN_REGIONS = { 537872: 'US', 533171: 'Singapore', 246001: 'UK' };
+// Wilayah BIN yang sudah diketahui; BIN lain belum ada keterangannya.
+const BIN_REGIONS = { 493728: 'Hong Kong' };
 const binLabel = (b) => (BIN_REGIONS[b] ? `${b} · ${BIN_REGIONS[b]}` : b);
 
 let config = { bins: [], binsNeedDob: [], minAmount: 10 };
@@ -120,8 +120,8 @@ function feeSummary(amount, label = 'Saldo awal') {
 function updateCreateForm() {
   const bin = $('#bin').value;
   const needDob = config.binsNeedDob.includes(bin);
-  $('#dob-field').classList.toggle('hidden', !needDob);
   $('#dob-field input').required = needDob;
+  $('#dob-hint').textContent = needDob ? '· wajib untuk BIN ini' : '· opsional';
   const amount = Number($('#create-amount').value) || 0;
   $('#create-summary').replaceChildren(...feeSummary(amount));
   for (const chip of document.querySelectorAll('#amount-chips .chip')) {
@@ -134,7 +134,7 @@ async function onCreate(e) {
   const form = e.target;
   const body = Object.fromEntries(new FormData(form));
   body.amount = Number(body.amount);
-  if (!config.binsNeedDob.includes(body.bin)) delete body.dateOfBirth;
+  if (!body.dateOfBirth) delete body.dateOfBirth;
 
   const ok = await confirmDialog(
     'Buat kartu baru?',
@@ -183,6 +183,8 @@ function toneOf(c) {
   return `tone-${h % 5}`;
 }
 
+const isVisa = (c) => /visa/i.test(c.card_brand || '') || String(c.bin || c.card_number || '').startsWith('4');
+
 function cardFace(c, { pan, expiry } = {}) {
   const region = BIN_REGIONS[c.bin] || c.card_brand || c.card_type || 'Virtual';
   const binClass = c.bin ? `bin-${c.bin}` : toneOf(c);
@@ -201,7 +203,7 @@ function cardFace(c, { pan, expiry } = {}) {
       'div',
       { class: 'face-bottom' },
       el('span', { class: 'face-name' }, expiry ? `${c.name_on_card || ''}  ·  ${expiry}` : c.name_on_card || ''),
-      el('span', { class: 'mc-logo' }, el('span'), el('span'))
+      isVisa(c) ? el('span', { class: 'visa-logo' }, 'VISA') : el('span', { class: 'mc-logo' }, el('span'), el('span'))
     )
   );
 }

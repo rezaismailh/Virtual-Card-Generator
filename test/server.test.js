@@ -1,4 +1,4 @@
-const { test, before, after } = require('node:test');
+﻿const { test, before, after } = require('node:test');
 const assert = require('node:assert');
 const { createApp } = require('../server');
 const { createMockFetch } = require('../lib/mock');
@@ -22,7 +22,7 @@ before(async () => {
 after(() => server.close());
 
 test('mode demo: tagihan melebihi saldo tercatat ditolak (insufficient_funds)', async () => {
-  const c = await call('create', { bin: '539502', amount: 50, name_on_card: 'Demo Tagihan' });
+  const c = await call('create', { bin: '441357', amount: 50, name_on_card: 'Demo Tagihan' });
   const charge = (amount) =>
     fetch(`${BASE}/api/mock/charge`, {
       method: 'POST',
@@ -54,15 +54,17 @@ test('route demo tidak ada di mode normal', async () => {
 
 test('validasi create', () => {
   assert.match(validate('create', { bin: '111111', amount: 10, name_on_card: 'Ab' }), /BIN/);
-  assert.match(validate('create', { bin: '539502', amount: 5, name_on_card: 'Ab' }), /minimal/);
-  assert.match(validate('create', { bin: '539502', amount: 10, name_on_card: 'A' }), /2 karakter/);
-  assert.match(validate('create', { bin: '537872', amount: 10, name_on_card: 'Ab' }), /dateOfBirth/);
-  assert.equal(validate('create', { bin: '537872', amount: 10, name_on_card: 'Ab', dateOfBirth: '1990-01-15' }), null);
-  assert.equal(validate('create', { bin: '539502', amount: '20', name_on_card: 'Ab' }), null);
+  assert.match(validate('create', { bin: '441357', amount: 5, name_on_card: 'Ab' }), /minimal/);
+  assert.match(validate('create', { bin: '441357', amount: 10, name_on_card: 'A' }), /2 karakter/);
+  assert.equal(validate('create', { bin: '49387520', amount: 10, name_on_card: 'Ab' }), null, 'BIN 8 digit diterima');
+  assert.match(validate('create', { bin: '493728', amount: 10, name_on_card: 'Ab', dateOfBirth: '15-01-1990' }), /YYYY-MM-DD/);
+  assert.match(validate('create', { bin: '539502', amount: 10, name_on_card: 'Ab' }), /BIN/, 'BIN lama ditolak');
+  assert.equal(validate('create', { bin: '493728', amount: 10, name_on_card: 'Ab', dateOfBirth: '1990-01-15' }), null);
+  assert.equal(validate('create', { bin: '441357', amount: '20', name_on_card: 'Ab' }), null);
 });
 
 test('alur lengkap: create, list, fund, details, freeze, transactions, delete', async () => {
-  const c = await call('create', { bin: '539502', amount: 20, name_on_card: 'John Alex' });
+  const c = await call('create', { bin: '441357', amount: 20, name_on_card: 'John Alex' });
   assert.equal(c.data.success, true);
   assert.equal(c.data.total_charged, 21.8);
   const id = c.data.card_id;

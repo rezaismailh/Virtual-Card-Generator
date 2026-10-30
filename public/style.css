@@ -380,6 +380,8 @@ input::placeholder { color: var(--text-2); opacity: 0.7; }
 .mc-logo span:first-child { background: #eb001b; }
 .mc-logo span:last-child { background: #f79e1b; margin-left: -10px; mix-blend-mode: screen; opacity: 0.95; }
 
+.visa-logo { font-size: 20px; font-weight: 800; font-style: italic; letter-spacing: 0.02em; line-height: 1; }
+
 .status-pill {
   display: inline-flex;
   align-items: center;
