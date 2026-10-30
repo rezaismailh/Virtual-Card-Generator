@@ -21,6 +21,37 @@ before(async () => {
 });
 after(() => server.close());
 
+test('mode demo: tagihan melebihi saldo tercatat ditolak (insufficient_funds)', async () => {
+  const c = await call('create', { bin: '539502', amount: 50, name_on_card: 'Demo Tagihan' });
+  const charge = (amount) =>
+    fetch(`${BASE}/api/mock/charge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-VCG': '1' },
+      body: JSON.stringify({ card_id: c.data.card_id, merchant: 'APP', amount }),
+    });
+  await charge(20);
+  await charge(40);
+  const t = await call('transactions', { card_id: c.data.card_id });
+  assert.deepEqual(
+    t.data.data.transactions.map((x) => [x.status, x.reason_code]),
+    [['failed', 'insufficient_funds'], ['success', 'approved']]
+  );
+  assert.equal(t.data.data.balance, 30);
+  await call('delete', { card_id: c.data.card_id });
+});
+
+test('route demo tidak ada di mode normal', async () => {
+  const app = createApp({ apiKey: 'k', fetchImpl: createMockFetch(), mock: false, port: PORT + 2 });
+  await new Promise((r) => app.listen(PORT + 2, '127.0.0.1', r));
+  const r = await fetch(`http://127.0.0.1:${PORT + 2}/api/mock/charge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-VCG': '1' },
+    body: '{}',
+  });
+  app.close();
+  assert.equal(r.status, 404);
+});
+
 test('validasi create', () => {
   assert.match(validate('create', { bin: '111111', amount: 10, name_on_card: 'Ab' }), /BIN/);
   assert.match(validate('create', { bin: '539502', amount: 5, name_on_card: 'Ab' }), /minimal/);

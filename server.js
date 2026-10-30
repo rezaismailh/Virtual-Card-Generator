@@ -70,6 +70,14 @@ function createApp({ apiKey, fetchImpl, mock = false, port }) {
       return send(res, 200, { mock, hasKey: Boolean(apiKey), bins: BINS, binsNeedDob: BINS_NEED_DOB, minAmount: MIN_AMOUNT });
     }
 
+    // Hanya ada di mode demo: tiru merchant menagih kartu, untuk mencoba notifikasi ditolak.
+    if (mock && fetchImpl.charge && req.method === 'POST' && url.pathname === '/api/mock/charge') {
+      if (req.headers['x-vcg'] !== '1') return send(res, 403, { success: false, message: 'Request ditolak' });
+      const b = await readJson(req).catch(() => ({}));
+      const ok = fetchImpl.charge(b.card_id, String(b.merchant || 'DEMO MERCHANT'), Number(b.amount) || 0);
+      return send(res, ok ? 200 : 404, { success: ok });
+    }
+
     const m = url.pathname.match(/^\/api\/cards\/([a-z]+)$/);
     if (req.method === 'POST' && m && ENDPOINTS[m[1]]) {
       // Header khusus + JSON memaksa preflight CORS, jadi halaman lain tidak bisa memanggil ini.
